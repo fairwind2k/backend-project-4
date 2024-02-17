@@ -1,4 +1,4 @@
-const pageloader = (url, dirname) => {
+const pageloader = (url) => {
   console.log(url);
 };
 

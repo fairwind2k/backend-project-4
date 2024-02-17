@@ -12,7 +12,7 @@ program
   .arguments('<url>', 'https://ru.hexlet.io/courses')
   .action(() => {
     console.log('234'); // stub
-    // console.log(pageloader(url));
+    console.log(pageloader('https://ru.hexlet.io'));
   });
 
 program.parse();
