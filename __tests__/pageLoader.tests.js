@@ -1,7 +1,7 @@
 /* eslint-disable no-tabs */
 import { test, expect, beforeEach } from '@jest/globals';
-import { dirname, join, path } from 'path';
-import { fileURLToPath } from 'url';
+import { path } from 'path';
+// import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import os from 'os';
 import nock from 'nock';
