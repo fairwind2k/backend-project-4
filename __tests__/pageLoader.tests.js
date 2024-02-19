@@ -1,6 +1,6 @@
 /* eslint-disable no-tabs */
 import { test, expect, beforeEach } from '@jest/globals';
-import { dirname, join, path } from 'path';
+import path, { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 import os from 'os';
@@ -22,21 +22,23 @@ beforeEach(async () => {
 });
 
 test('should return right path to file', async () => {
-  const scope = nock('https://ru.hexlet.io')
+  nock('https://ru.hexlet.io')
     .get('/courses')
     .reply(200, `${pathToTmpDir}ru-hexlet-io-courses.html`);
 
   const actual = await pageLoader('https://ru.hexlet.io/courses');
-  const expected = scope.reply(); // переделать пути
+  const expected = `${pathToTmpDir}ru-hexlet-io-courses.html`;
   expect(actual).toBe(expected);
 });
 
 test('should be read file on the given path', async () => {
-  const scope = nock('https://ru.hexlet.io')
+  nock('https://ru.hexlet.io')
     .get('/courses')
     .replyWithFile(200, `${pathToTmpDir}ru-hexlet-io-courses.html`);
 
-  const expected = scope.replyWithFile();
+  await pageLoader('https://ru.hexlet.io/courses');
+  const filepath = `${pathToTmpDir}ru-hexlet-io-courses.html`;
+  const expectedData = await fs.readFile(filepath, { encoding: 'utf8' });
   const contents = await fs.readFile(testFilePath, { encoding: 'utf8' });
-  expect(expected).toBe(contents);
+  expect(expectedData).toBe(contents);
 });
