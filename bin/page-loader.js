@@ -7,12 +7,19 @@ program
   .name('page-loader')
   .description('Page loader utility')
   .version('1.0.0')
-  .helpOption('-h --help')
-  .option('-o, --output [dir]', 'output dir', '/home/user/current-dir')
-  .arguments('<url>', 'https://ru.hexlet.io/courses')
+  .helpOption('-h --help',  'display help for command')
+  .option('-o, --output [dir]', 'output dir', process.cwd())
+  // .option('-o, --output [dir]', 'output dir', '/home/user/current-dir')
+  .arguments('<url>')
   .action(() => {
-    console.log('234'); // stub
-    console.log(pageloader('https://ru.hexlet.io'));
+    const options = program.opts();
+    const outputPath = pageloader(url, options.output);
+    console.log(outputPath);
+
+    // console.log('234'); // stub
+    // console.log(pageloader('https://ru.hexlet.io'));
   });
 
 program.parse();
+
+
