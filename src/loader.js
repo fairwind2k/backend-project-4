@@ -4,13 +4,13 @@ import fs from 'fs/promises';
 import generateFileName from './utils/file-name';
  
 function downloadPage(url, dir = process.cwd()) {
-    return axios.get(url)  // 1. Отправляем GET-запрос
+    return axios.get(url)
         .then(response => {
-            const fileName = generateFileName(url); // 2. Формируем имя файла
-            const filePath = path.join(dir, fileName); // 3. Создаём полный путь
+            const fileName = generateFileName(url);
+            const filePath = path.join(dir, fileName);
 
-            return fs.promises.writeFile(filePath, response.data) // 4. Сохраняем в файл
-                .then(() => filePath); // 5. Возвращаем путь
+            return fs.promises.writeFile(filePath, response.data)
+                .then(() => filePath);
         })
         .catch(error => {
             console.error('Ошибка загрузки страницы:', error.message);
