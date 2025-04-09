@@ -11,7 +11,7 @@ program
   .option('-o, --output [dir]', 'output dir', process.cwd())
   // .option('-o, --output [dir]', 'output dir', '/home/user/current-dir')
   .arguments('<url>')
-  .action(() => {
+  .action((url, option) => {
     const options = program.opts();
     const outputPath = pageloader(url, options.output);
     console.log(outputPath);
@@ -20,6 +20,6 @@ program
     // console.log(pageloader('https://ru.hexlet.io'));
   });
 
-program.parse();
+program.parse(process.argv);
 
 
