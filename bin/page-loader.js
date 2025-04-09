@@ -15,7 +15,6 @@ program
     const options = program.opts();
     const outputPath = pageloader(url, options.output);
     console.log(outputPath);
-
     // console.log('234'); // stub
     // console.log(pageloader('https://ru.hexlet.io'));
   });
