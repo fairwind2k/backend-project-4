@@ -1,7 +1,7 @@
 import axios from 'axios';
 import path from 'path';
 import fs from 'fs/promises';
-import generateFileName from './utils/file-name';
+import generateFileName from './utils/file-name.js';
  
 function downloadPage(url, dir = process.cwd()) {
     return axios.get(url)
@@ -9,12 +9,14 @@ function downloadPage(url, dir = process.cwd()) {
             const fileName = generateFileName(url);
             const filePath = path.join(dir, fileName);
 
-            return fs.promises.writeFile(filePath, response.data)
+            return fs.writeFile(filePath, response.data)
                 .then(() => filePath);
         })
         .catch(error => {
             console.error('Ошибка загрузки страницы:', error.message);
             throw error;
         });
-}
+};
+
+export default downloadPage;
 
