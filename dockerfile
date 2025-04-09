@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:alpine
 
 WORKDIR /app
 
@@ -10,4 +10,4 @@ COPY . .
 
 RUN npm run build
 
-CMD ["node", "bin/page-loader.js -h"]
+CMD ["node", "bin/page-loader.js"]
