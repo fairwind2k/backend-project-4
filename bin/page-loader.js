@@ -11,7 +11,7 @@ program
   .option('-o, --output [dir]', 'output dir', process.cwd())
   // .option('-o, --output [dir]', 'output dir', '/home/user/current-dir')
   .arguments('<url>')
-  .action((url, options) => {
+  .action((url) => {
     const options = program.opts();
     const outputPath = pageloader(url, options.output);
     console.log(outputPath);
