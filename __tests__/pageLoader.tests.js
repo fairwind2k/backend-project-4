@@ -16,6 +16,7 @@ const __dirname = dirname(__filename);
 
 const getFixturePath = (filename) => join(__dirname, '../__fixtures__', filename);
 const testFilePath = getFixturePath('file1.html');
+const testUrl = 'https://ru.hexlet.io/courses';
 
 beforeEach(async () => {
   pathToTmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-'));
@@ -24,21 +25,20 @@ beforeEach(async () => {
 test('should return right path to file', async () => {
   nock('https://ru.hexlet.io')
     .get('/courses')
-    .reply(200, `${pathToTmpDir}ru-hexlet-io-courses.html`);
+    .reply(200, `${pathToTmpDir}/ru-hexlet-io-courses.html`);
 
-  const actual = await pageLoader('https://ru.hexlet.io/courses');
-  const expected = `${pathToTmpDir}ru-hexlet-io-courses.html`;
+  const actual = await pageLoader(testUrl, pathToTmpDir);
+  const expected = `${pathToTmpDir}/ru-hexlet-io-courses.html`;
   expect(actual).toBe(expected);
 });
 
 test('should be read file on the given path', async () => {
   nock('https://ru.hexlet.io')
     .get('/courses')
-    .replyWithFile(200, `${pathToTmpDir}ru-hexlet-io-courses.html`);
-
-  await pageLoader('https://ru.hexlet.io/courses');
-  const filepath = `${pathToTmpDir}ru-hexlet-io-courses.html`;
-  const expectedData = await fs.readFile(filepath, { encoding: 'utf8' });
-  const contents = await fs.readFile(testFilePath, { encoding: 'utf8' });
-  expect(expectedData).toBe(contents);
+    .replyWithFile(200, testFilePath);
+  
+  const filepath = await pageLoader(testUrl, pathToTmpDir);
+  const contents = await fs.readFile(filepath, { encoding: 'utf8' });
+  const expectedData = await fs.readFile(testFilePath, { encoding: 'utf8' });
+  expect(contents).toBe(expectedData);
 });
