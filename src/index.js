@@ -1,11 +1,6 @@
 import downloadPage from './loader.js';
 
-const pageloader = (url, dir) => {
-  return downloadPage(url, dir)
-    .then(dirName => {
-      // console.log('dirName=', dirName);
-      return dirName;
-    });
-};
+const pageloader = (url, dir) => downloadPage(url, dir)
+    .then(dirName => dirName);
 
 export default pageloader;

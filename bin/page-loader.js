@@ -7,11 +7,11 @@ program
   .name('page-loader')
   .description('Page loader utility')
   .version('1.0.0')
-  .helpOption('-h --help',  'display help for command')
+  .helpOption('-h --help', 'display help for command')
   .option('-o, --output [dir]', 'output dir', process.cwd())
   // .option('-o, --output [dir]', 'output dir', '/home/user/current-dir')
   .arguments('<url>')
-  .action((url, option) => {
+  .action((url, options) => {
     const options = program.opts();
     const outputPath = pageloader(url, options.output);
     console.log(outputPath);
@@ -20,5 +20,3 @@ program
   });
 
 program.parse(process.argv);
-
-

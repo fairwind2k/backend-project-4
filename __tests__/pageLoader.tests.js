@@ -36,7 +36,7 @@ test('should be read file on the given path', async () => {
   nock('https://ru.hexlet.io')
     .get('/courses')
     .replyWithFile(200, testFilePath);
-  
+
   const filepath = await pageLoader(testUrl, pathToTmpDir);
   const contents = await fs.readFile(filepath, { encoding: 'utf8' });
   const expectedData = await fs.readFile(testFilePath, { encoding: 'utf8' });
