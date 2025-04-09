@@ -1,7 +1,11 @@
-const pageloader = (url) => {
-  console.log(url);
-};
+import downloadPage from './loader.js';
 
-pageloader('***');
+const pageloader = (url, dir) => {
+  return downloadPage(url, dir)
+    .then(dirName => {
+      // console.log('dirName=', dirName);
+      return dirName;
+    });
+};
 
 export default pageloader;
