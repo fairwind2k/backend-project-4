@@ -1,9 +1,23 @@
-const generateFileName = (url) => {
+import path from path;
+
+const formattedStr = (str) => str.replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-');
+
+const formattedPath = (url) => {
   const { hostname, pathname } = new URL(url);
-  const formattedPath = `${hostname}${pathname}`
-    .replace(/[^a-zA-Z0-9]/g, '-')
-    .replace(/-+/g, '-');
-  return `${formattedPath}.html`;
+  const newPath = formattedStr(`${hostname}${pathname}`);
+  const host = formattedStr(hostname);
+  const result = { newPath, host };
+  return result;
 };
 
-export default generateFileName;
+const generateHtmlFileName = (url) => `${formattedPath(url).newPath}.html`;
+
+const generateDirName = (url) => `${formattedPath(url).newPath}_files`;
+
+const formattedImgName = (src) => {
+  const imgName = `${path.parse(src).dir}/${path.parse(src).name}`;
+  return `${formattedStr(imgName)}${path.extname(src)}`;
+};
+const generateImgName = (url, src) => `${generateDirName(url)}/${formattedPath(url).host}${formattedImgName(src)}`;
+
+export { generateHtmlFileName, generateDirName, generateImgName };
