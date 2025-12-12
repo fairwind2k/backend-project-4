@@ -55,10 +55,9 @@ const isLocalResource = (pageUrl, resourceSrc) => {
     const resourceUrl = new URL(resourceSrc, pageUrl)
     const resourceHost = resourceUrl.hostname
 
-    // Проверяем, что ресурс находится на том же домене или поддомене
     return resourceHost === pageHost || resourceHost.endsWith(`.${pageHost}`)
   }
-  catch (error) {
+  catch {
     return false
   }
 }
