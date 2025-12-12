@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { program } from 'commander';
-import pageloader from '../src/index.js';
+import { program } from 'commander'
+import pageloader from '../src/index.js'
 
 program
   .name('page-loader')
@@ -12,11 +12,22 @@ program
   // .option('-o, --output [dir]', 'output dir', '/home/user/current-dir')
   .arguments('<url>')
   .action((url) => {
-    const options = program.opts();
-    const outputPath = pageloader(url, options.output);
-    console.log(outputPath);
+    const options = program.opts()
+    pageloader(url, options.output)
+      .then((result) => {
+        console.log(result.htmlFilePath)
+        return result
+      })
+      .then((result) => {
+        console.log(result.dirName)
+        return result
+      })
+      .catch((error) => {
+        console.error('Ошибка загрузки:', error.message)
+        process.exit(1)
+      })
     // console.log('234'); // stub
     // console.log(pageloader('https://ru.hexlet.io'));
-  });
+  })
 
-program.parse(process.argv);
+program.parse(process.argv)

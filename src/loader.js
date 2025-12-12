@@ -1,89 +1,149 @@
-import axios from 'axios';
-import path from 'path';
-import fs from 'fs/promises';
-import { generateHtmlFileName } from './utils/file-name.js';
+import axios from 'axios'
+import path from 'path'
+import fs from 'fs/promises'
+import * as cheerio from 'cheerio'
+import { getHtmlFileName, getDirName, getImgName } from './utils/file-name.js'
 
-function downloadHtmlPage(url, dir = process.cwd()) {
+// const gettmlFileName = (url) => `${formattedPath(url).newPath}.html`;
+
+// const getDirName = (url) => `${formattedPath(url).newPath}_files`;
+
+// const formattedImgName = (src) => {
+//   const imgName = `${path.parse(src).dir}/${path.parse(src).name}`;
+//   return `${formattedStr(imgName)}${path.extname(src)}`;
+// };
+// const getImgName = (url, src) => `${getDirName(url)}/${formattedPath(url).host}${formattedImgName(src)}`;
+
+// --
+// path.parse {
+//   root: '/',
+//   dir: '/assets/professions',
+//   base: 'nodejs.png',
+//   ext: '.png',
+//   name: 'nodejs'
+// }
+// path.extname .png
+// formattedPath  ru-hexlet-io-courses
+// html-file name:  ru-hexlet-io-courses.html
+// resourse dir:  ru-hexlet-io-courses_files
+// imgName:  /assets/professions/nodejs
+// new imageName:  -assets-professions-nodejs.png
+// imgName:  /assets/professions/nodejs
+// gener imgName:  ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png
+
+function getHtmlPage(url, dir = process.cwd()) {
   return axios.get(url)
     .then((response) => {
-      const fileName = generateHtmlFileName(url);
-      const filePath = path.join(dir, fileName);
+      const fileName = getHtmlFileName(url)
+      const filePath = path.join(dir, fileName)
       return fs.writeFile(filePath, response.data)
-        .then(() => filePath);
+        .then(() => ({
+          filePath,
+          htmlContent: response.data,
+        }))
     })
-    .then( )
     .catch((error) => {
-      console.error('Ошибка загрузки страницы:', error.message);
-      throw error;
-    });
+      console.error('Ошибка загрузки страницы:', error.message)
+      throw error
+    })
+};
+
+// Функция для проверки, является ли URL локальным (тот же домен)
+const isLocalResource = (pageUrl, resourceSrc) => {
+  try {
+    const pageHost = new URL(pageUrl).hostname
+    const resourceUrl = new URL(resourceSrc, pageUrl)
+    const resourceHost = resourceUrl.hostname
+
+    // Проверяем, что ресурс находится на том же домене или поддомене
+    return resourceHost === pageHost || resourceHost.endsWith(`.${pageHost}`)
+  }
+  catch (error) {
+    return false
+  }
 }
 
-function downloadResource(resourceUrl, outputDir) {
-  const fileName = generateFileName(resourceUrl);
-  const filePath = path.join(outputDir, fileName);
-
-  return axios.get(resourceUrl, { responseType: 'arraybuffer' })
-    .then(response => fs.writeFile(filePath, response.data))
+// Функция для скачивания изображения
+const downloadImage = (imageUrl, imagePath) => {
+  return axios.get(imageUrl, { responseType: 'arraybuffer' })
+    .then(response => fs.writeFile(imagePath, response.data))
     .then(() => ({
-      originalUrl: resourceUrl,
-      localPath: path.relative(outputDir, filePath),
-      status: 'success'
+      originalUrl: imageUrl,
+      localPath: imagePath,
+      status: 'success',
     }))
     .catch(error => ({
-      originalUrl: resourceUrl,
+      originalUrl: imageUrl,
       error: error.message,
-      status: 'failed'
-    }));
+      status: 'failed',
+    }))
 }
 
+function pageloader(url, dir = process.cwd()) {
+  let htmlData
+  let $
+  let dirPath
 
-function downloadPage(url, dir = process.cwd()) {
-  const htmlFileName = generateFileName(url);
-  const htmlFilePath = path.join(dir, htmlFileName);
-  const resourcesDir = getResourcesDir(htmlFilePath);
-  let $;
-
-  return axios.get(url)
-    .then(response => {
-      $ = cheerio.load(response.data);
-      return fs.mkdir(resourcesDir, { recursive: true });
+  return getHtmlPage(url, dir)
+    .then((result) => {
+      htmlData = result
+      const dirName = getDirName(url)
+      dirPath = path.join(dir, dirName)
+      return fs.mkdir(dirPath, { recursive: true })
     })
     .then(() => {
-      const resources = [];
-      $('img, link[rel="stylesheet"], script').each((i, el) => {
-        const src = $(el).attr('src') || $(el).attr('href');
-        if (src && !src.startsWith('data:')) {
-          resources.push(new URL(src, url).href);
+      // Парсим HTML с помощью cheerio
+      $ = cheerio.load(htmlData.htmlContent)
+
+      // Находим все изображения и собираем локальные ресурсы
+      const localImages = []
+      $('img').each((i, element) => {
+        const src = $(element).attr('src')
+        if (src && isLocalResource(url, src)) {
+          const fullImageUrl = new URL(src, url).href
+          const imageName = getImgName(url, src)
+          const imagePath = path.join(dir, imageName)
+
+          localImages.push({
+            element,
+            originalSrc: src,
+            fullUrl: fullImageUrl,
+            localPath: imagePath,
+            relativePath: imageName,
+          })
         }
-      });
-      return Promise.all(resources.map(resourceUrl => downloadResource(resourceUrl, resourcesDir)));
+      })
+
+      // Скачиваем все локальные изображения параллельно
+      const downloadPromises = localImages.map(img =>
+        downloadImage(img.fullUrl, img.localPath),
+      )
+
+      return Promise.all(downloadPromises)
+        .then(downloadResults => ({ localImages, downloadResults }))
     })
-    .then(downloadResults => {
-      $('img, link[rel="stylesheet"], script').each((i, el) => {
-        const tag = $(el);
-        const attr = tag.is('img') || tag.is('script') ? 'src' : 'href';
-        const originalUrl = tag.attr(attr);
-        
-        if (originalUrl && !originalUrl.startsWith('data:')) {
-          const resourceUrl = new URL(originalUrl, url).href;
-          const foundResource = downloadResults.find(r => r.originalUrl === resourceUrl);
-          
-          if (foundResource && foundResource.status === 'success') {
-            tag.attr(attr, path.join(path.basename(resourcesDir), foundResource.localPath));
-          }
+    .then(({ localImages, downloadResults }) => {
+      // Обновляем HTML, заменяя ссылки на локальные пути
+      localImages.forEach((img, index) => {
+        const downloadResult = downloadResults[index]
+        if (downloadResult.status === 'success') {
+          $(img.element).attr('src', img.relativePath)
         }
-      });
-      return fs.writeFile(htmlFilePath, $.html());
+      })
+
+      // Сохраняем обновленный HTML
+      const updatedHtml = $.html()
+      return fs.writeFile(htmlData.filePath, updatedHtml)
     })
     .then(() => ({
-      htmlPath: htmlFilePath,
-      resourcesDir,
-      downloadedResources: downloadResults
+      htmlFilePath: htmlData.filePath,
+      dirName: path.basename(dirPath),
+      dirPath,
     }))
-    .catch(error => {
-      console.error('Download failed:', error.message);
-      throw error;
-    });
+    .catch((error) => {
+      console.error('Ошибка в pageloader:', error.message)
+      throw error
+    })
 }
 
-export default downloadPage;
+export { pageloader }
