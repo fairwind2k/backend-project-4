@@ -8,8 +8,6 @@ import pageLoader from '../src/index.js'
 
 nock.disableNetConnect()
 
-let pathToTmpDir
-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -17,15 +15,20 @@ const getFixturePath = filename => join(__dirname, '../__fixtures__', filename)
 const testFilePath = getFixturePath('file1.html')
 const testImgPath = getFixturePath('file2.html')
 const testUrl = 'https://ru.hexlet.io/courses'
-const expectedHtmlPath = `${pathToTmpDir}/ru-hexlet-io-courses.html`
-const expectedDirPath = path.join(pathToTmpDir, 'ru-hexlet-io-courses_files')
-const expectedImgPath = path.join(
-  expectedDirPath,
-  'ru-hexlet-io-assets-professions-nodejs.png',
-)
+
+let pathToTmpDir
+let expectedHtmlPath
+let expectedDirPath
+let expectedImgPath
 
 beforeEach(async () => {
   pathToTmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
+  expectedHtmlPath = `${pathToTmpDir}/ru-hexlet-io-courses.html`
+  expectedDirPath = path.join(pathToTmpDir, 'ru-hexlet-io-courses_files')
+  expectedImgPath = path.join(
+  expectedDirPath,
+  'ru-hexlet-io-assets-professions-nodejs.png',
+  )
 })
 
 afterEach(async () => {
@@ -39,10 +42,10 @@ afterEach(async () => {
 test('should return right path to file', async () => {
   nock('https://ru.hexlet.io')
     .get('/courses')
-    .reply(200, `${pathToTmpDir}/ru-hexlet-io-courses.html`)
+    .reply(200, '')
 
   const actual = await pageLoader(testUrl, pathToTmpDir)
-  expect(actual).toBe(expectedHtmlPath)
+  expect(actual.htmlFilePath).toBe(expectedHtmlPath)
 })
 
 test('should be read file on the given path', async () => {
