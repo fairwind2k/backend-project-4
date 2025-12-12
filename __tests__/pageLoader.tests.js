@@ -26,8 +26,8 @@ beforeEach(async () => {
   expectedHtmlPath = `${pathToTmpDir}/ru-hexlet-io-courses.html`
   expectedDirPath = path.join(pathToTmpDir, 'ru-hexlet-io-courses_files')
   expectedImgPath = path.join(
-  expectedDirPath,
-  'ru-hexlet-io-assets-professions-nodejs.png',
+    expectedDirPath,
+    'ru-hexlet-io-assets-professions-nodejs.png',
   )
 })
 
