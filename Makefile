@@ -16,6 +16,9 @@ test:
 test-coverage:
 	npm test -- --coverage --coverageProvider=v8
 
-.PHONY: test
+example:
+	node bin/page-loader.js https://fairwind2k.github.io/random_animal/
+
+.PHONY: test example
 
 
