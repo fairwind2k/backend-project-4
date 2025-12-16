@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 import os from 'os'
 import nock from 'nock'
+import { logTest, logNock } from '../src/logger.js'
 import pageLoader from '../src/index.js'
 
 nock.disableNetConnect()
@@ -22,17 +23,26 @@ let expectedDirPath
 let expectedImgPath
 
 beforeEach(async () => {
+  logTest('Setting up test environment')
+
   pathToTmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-'))
+  logTest('Created temp dir: %s', pathToTmpDir)
+
   expectedHtmlPath = `${pathToTmpDir}/ru-hexlet-io-courses.html`
   expectedDirPath = path.join(pathToTmpDir, 'ru-hexlet-io-courses_files')
   expectedImgPath = path.join(
     expectedDirPath,
     'ru-hexlet-io-assets-professions-nodejs.png',
   )
+  logTest('Expected HTML path: %s', expectedHtmlPath)
+  logTest('Expected dir path: %s', expectedDirPath)
 })
 
+
 afterEach(async () => {
+  logTest('Cleaning up test environment')
   await fs.rm(pathToTmpDir, { recursive: true, force: true })
+  logTest('Removed temp dir: %s', pathToTmpDir)
 })
 
 // afterEach(() => {
@@ -40,12 +50,19 @@ afterEach(async () => {
 // })
 
 test('should return right path to file', async () => {
+  logTest('Test: should return right path to file')
+  
+  logNock('Creating mock: GET https://ru.hexlet.io/courses')
   nock('https://ru.hexlet.io')
     .get('/courses')
     .reply(200, '')
-
+  logTest('Calling pageloader...')
   const actual = await pageLoader(testUrl, pathToTmpDir)
+  logTest('Returned path: %s', actual)
+  logTest('Expected path: %s', expectedHtmlPath)
+
   expect(actual.htmlFilePath).toBe(expectedHtmlPath)
+  logTest('Test passed')
 })
 
 test('should be read file on the given path', async () => {
