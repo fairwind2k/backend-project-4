@@ -5,7 +5,18 @@
   "description": "[![Actions Status](https://github.com/fairwind2k/backend-project-4/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/fairwind2k/backend-project-4/actions)",
   "main": "src/index.js",
   "scripts": {
-    "test": "npx jest"
+    "dev": "npm run start https://fairwind2k.github.io/random_animal/",
+    "dev:debug": "DEBUG=* node bin/page-loader.js https://fairwind2k.github.io/random_animal/",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    
+    "test:nock": "NODE_DEBUG=nock:* npm test",
+    "test:debug": "DEBUG=page-loader:* npm test",
+    "test:verbose": "DEBUG=* npm test",
+    "start": "node bin/page-loader.js",
+    "start:debug": "DEBUG=page-loader:* node bin/page-loader.js",
+    "start:all": "DEBUG=* node bin/page-loader.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "repository": {
     "type": "git",
@@ -14,7 +25,9 @@
   "author": "Natalia Flerko",
   "license": "ISC",
   "bin": {
-    "page-loader": "bin/page-loader.js"
+    "page-loader": "bin/page-loader.js",
+    "pageloader": "bin/page-loader.js",
+    "pl": "bin/page-loader.js"
   },
   "devDependencies": {
     "@eslint/create-config": "^1.11.0",
@@ -29,7 +42,9 @@
   "dependencies": {
     "@jest/globals": "^30.2.0",
     "axios": "^1.13.2",
+    "axios-debug-log": "^1.0.0",
     "cheerio": "^1.1.2",
-    "commander": "^14.0.2"
+    "commander": "^14.0.2",
+    "debug": "^4.4.3"
   }
 }
