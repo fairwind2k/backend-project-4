@@ -1,8 +1,10 @@
 import axios from 'axios'
+import axiosDebug from 'axios-debug-log'
 import path from 'path'
 import fs from 'fs/promises'
 import * as cheerio from 'cheerio'
 import { getHtmlFileName, getDirName, getImgName } from './utils/file-name.js'
+import { log, logParser, logFs, logError } from './logger.js'
 
 // const gettmlFileName = (url) => `${formattedPath(url).newPath}.html`;
 
@@ -31,7 +33,10 @@ import { getHtmlFileName, getDirName, getImgName } from './utils/file-name.js'
 // imgName:  /assets/professions/nodejs
 // gener imgName:  ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png
 
+axiosDebug(axios)
+
 function getHtmlPage(url, dir = process.cwd()) {
+
   return axios.get(url)
     .then((response) => {
       const fileName = getHtmlFileName(url)
@@ -79,6 +84,10 @@ const downloadImage = (imageUrl, imagePath) => {
 }
 
 function pageloader(url, dir = process.cwd()) {
+  log('=== Starting pageloader ===')
+  log('URL: %s', url)
+  log('Output directory: %s', dir)
+  
   let htmlData
   let $
   let dirPath
@@ -91,10 +100,9 @@ function pageloader(url, dir = process.cwd()) {
       return fs.mkdir(dirPath, { recursive: true })
     })
     .then(() => {
-      // Парсим HTML с помощью cheerio
+
       $ = cheerio.load(htmlData.htmlContent)
 
-      // Находим все изображения и собираем локальные ресурсы
       const localImages = []
       $('img').each((i, element) => {
         const src = $(element).attr('src')
@@ -113,7 +121,6 @@ function pageloader(url, dir = process.cwd()) {
         }
       })
 
-      // Скачиваем все локальные изображения параллельно
       const downloadPromises = localImages.map(img =>
         downloadImage(img.fullUrl, img.localPath),
       )
@@ -122,7 +129,7 @@ function pageloader(url, dir = process.cwd()) {
         .then(downloadResults => ({ localImages, downloadResults }))
     })
     .then(({ localImages, downloadResults }) => {
-      // Обновляем HTML, заменяя ссылки на локальные пути
+
       localImages.forEach((img, index) => {
         const downloadResult = downloadResults[index]
         if (downloadResult.status === 'success') {
@@ -130,7 +137,6 @@ function pageloader(url, dir = process.cwd()) {
         }
       })
 
-      // Сохраняем обновленный HTML
       const updatedHtml = $.html()
       return fs.writeFile(htmlData.filePath, updatedHtml)
     })
