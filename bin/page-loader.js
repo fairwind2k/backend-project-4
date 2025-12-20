@@ -26,8 +26,6 @@ program
         console.error('Ошибка загрузки:', error.message)
         process.exit(1)
       })
-    // console.log('234'); // stub
-    // console.log(pageloader('https://ru.hexlet.io'));
   })
 
 program.parse(process.argv)
