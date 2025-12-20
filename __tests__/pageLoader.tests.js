@@ -38,7 +38,6 @@ beforeEach(async () => {
   logTest('Expected dir path: %s', expectedDirPath)
 })
 
-
 afterEach(async () => {
   logTest('Cleaning up test environment')
   await fs.rm(pathToTmpDir, { recursive: true, force: true })
@@ -51,7 +50,7 @@ afterEach(async () => {
 
 test('should return right path to file', async () => {
   logTest('Test: should return right path to file')
-  
+
   logNock('Creating mock: GET https://ru.hexlet.io/courses')
   nock('https://ru.hexlet.io')
     .get('/courses')
@@ -64,6 +63,7 @@ test('should return right path to file', async () => {
   expect(actual.htmlFilePath).toBe(expectedHtmlPath)
   logTest('Test passed')
 })
+// // Добавьте в тесты проверку скачивания ресурсов и изменения HTML.
 
 test('should be read file on the given path', async () => {
   nock('https://ru.hexlet.io')
