@@ -10,7 +10,7 @@ export const logError = debug('page-loader:error')
 export const logAxios = {
   request: debug('page-loader:axios:request'),
   response: debug('page-loader:axios:response'),
-  error: debug('page-loader:axios:error')
+  error: debug('page-loader:axios:error'),
 }
 export const logNock = debug('page-loader:nock')
 
