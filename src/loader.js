@@ -4,39 +4,12 @@ import path from 'path'
 import fs from 'fs/promises'
 import * as cheerio from 'cheerio'
 import { getHtmlFileName, getDirName, getImgName } from './utils/file-name.js'
-import { log, logParser, logFs, logError } from './logger.js'
-
-// const gettmlFileName = (url) => `${formattedPath(url).newPath}.html`;
-
-// const getDirName = (url) => `${formattedPath(url).newPath}_files`;
-
-// const formattedImgName = (src) => {
-//   const imgName = `${path.parse(src).dir}/${path.parse(src).name}`;
-//   return `${formattedStr(imgName)}${path.extname(src)}`;
-// };
-// const getImgName = (url, src) => `${getDirName(url)}/${formattedPath(url).host}${formattedImgName(src)}`;
-
-// --
-// path.parse {
-//   root: '/',
-//   dir: '/assets/professions',
-//   base: 'nodejs.png',
-//   ext: '.png',
-//   name: 'nodejs'
-// }
-// path.extname .png
-// formattedPath  ru-hexlet-io-courses
-// html-file name:  ru-hexlet-io-courses.html
-// resourse dir:  ru-hexlet-io-courses_files
-// imgName:  /assets/professions/nodejs
-// new imageName:  -assets-professions-nodejs.png
-// imgName:  /assets/professions/nodejs
-// gener imgName:  ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png
+import { log } from './logger.js'
+// import { log, logParser, logFs, logError } from './logger.js'
 
 axiosDebug(axios)
 
 function getHtmlPage(url, dir = process.cwd()) {
-
   return axios.get(url)
     .then((response) => {
       const fileName = getHtmlFileName(url)
@@ -53,7 +26,6 @@ function getHtmlPage(url, dir = process.cwd()) {
     })
 };
 
-// Функция для проверки, является ли URL локальным (тот же домен)
 const isLocalResource = (pageUrl, resourceSrc) => {
   try {
     const pageHost = new URL(pageUrl).hostname
@@ -67,7 +39,6 @@ const isLocalResource = (pageUrl, resourceSrc) => {
   }
 }
 
-// Функция для скачивания изображения
 const downloadImage = (imageUrl, imagePath) => {
   return axios.get(imageUrl, { responseType: 'arraybuffer' })
     .then(response => fs.writeFile(imagePath, response.data))
@@ -85,14 +56,14 @@ const downloadImage = (imageUrl, imagePath) => {
 
 function pageloader(url, dir = process.cwd()) {
   log('=== Starting pageloader ===')
-  log('URL: %s', url)
   log('Output directory: %s', dir)
-  
+
   let htmlData
   let $
   let dirPath
 
-  return getHtmlPage(url, dir)
+  return fs.mkdir(dir, { recursive: true })
+    .then(() => getHtmlPage(url, dir))
     .then((result) => {
       htmlData = result
       const dirName = getDirName(url)
@@ -100,7 +71,6 @@ function pageloader(url, dir = process.cwd()) {
       return fs.mkdir(dirPath, { recursive: true })
     })
     .then(() => {
-
       $ = cheerio.load(htmlData.htmlContent)
 
       const localImages = []
@@ -129,7 +99,6 @@ function pageloader(url, dir = process.cwd()) {
         .then(downloadResults => ({ localImages, downloadResults }))
     })
     .then(({ localImages, downloadResults }) => {
-
       localImages.forEach((img, index) => {
         const downloadResult = downloadResults[index]
         if (downloadResult.status === 'success') {
