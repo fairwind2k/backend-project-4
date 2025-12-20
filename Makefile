@@ -10,6 +10,9 @@ page-loader:
 lint:
 	npx eslint .
 
+fix:
+	npx eslint --fix .
+
 test:
 	npx jest
 
@@ -17,7 +20,7 @@ test-coverage:
 	npm test -- --coverage --coverageProvider=v8
 
 example:
-	node bin/page-loader.js https://fairwind2k.github.io/random_animal/
+	node bin/page-loader.js -o ./page-loader https://fairwind2k.github.io/random_animal/
 
 .PHONY: test example
 
