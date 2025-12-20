@@ -5,8 +5,8 @@
   "description": "[![Actions Status](https://github.com/fairwind2k/backend-project-4/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/fairwind2k/backend-project-4/actions)",
   "main": "src/index.js",
   "scripts": {
-    "dev": "npm run start https://fairwind2k.github.io/random_animal/",
-    "dev:debug": "DEBUG=* node bin/page-loader.js https://fairwind2k.github.io/random_animal/",
+    "dev": "node bin/page-loader.js -o ./page-loader https://fairwind2k.github.io/random_animal/",
+    "dev:debug": "DEBUG=* node bin/page-loader.js ",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     
     "test:nock": "NODE_DEBUG=nock:* npm test",
