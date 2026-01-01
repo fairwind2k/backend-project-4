@@ -9,6 +9,9 @@ import { log } from './logger.js'
 
 axiosDebug(axios)
 
+// Реализуйте скачивание всех локальных ресурсов из тегов link и script. 
+// Локальные ресурсы - это всё, что находится на том же домене (с учётом поддоменов), что и страница.
+
 function getHtmlPage(url, dir = process.cwd()) {
   return axios.get(url)
     .then((response) => {
