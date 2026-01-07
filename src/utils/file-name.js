@@ -17,10 +17,17 @@ const getHtmlFileName = url => `${formattedPath(url).newPath}.html`
 
 const getDirName = url => `${formattedPath(url).newPath}_files`
 
-const formattedImgName = (src) => {
-  const parsed = path.parse(src)
-  return `${formattedStr(parsed.name)}${parsed.ext}`
+const formattedImgName = (imgUrl) => {  
+  const { hostname, pathname } = new URL(imgUrl)
+  const ext = path.extname(pathname)
+  const pathWithoutExt = pathname.slice(0, -ext.length)
+  const formattedName = formattedStr(`${hostname}${pathWithoutExt}`)
+  return `${formattedName}${ext}`
 }
-const getImgName = (url, src) => `${getDirName(url)}/${formattedPath(url).host}-${formattedImgName(src)}`
+
+const getImgName = (pageUrl, src) => {
+  const fullImgUrl = new URL(src, pageUrl)
+  return `${getDirName(pageUrl)}/${formattedImgName(fullImgUrl.href)}`
+}
 
 export { getHtmlFileName, getDirName, getImgName }
