@@ -17,7 +17,7 @@ const getHtmlFileName = url => `${formattedPath(url).newPath}.html`
 
 const getDirName = url => `${formattedPath(url).newPath}_files`
 
-const formattedImgName = (imgUrl) => {  
+const formattedImgName = (imgUrl) => {
   const { hostname, pathname } = new URL(imgUrl)
   const ext = path.extname(pathname)
   const pathWithoutExt = pathname.slice(0, -ext.length)
