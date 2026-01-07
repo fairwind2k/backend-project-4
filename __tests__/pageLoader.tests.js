@@ -99,12 +99,8 @@ test('DEBUG: check what is created', async () => {
   console.log('EXPECTED PATH:', expectedImgPath)
 })
 
-// - падает строка 119
-//   expect(received).toBe(expected) // Object.is equality
-  //   Expected: true
-  //  Received: false
 test('should return right path to file with img, save img', async () => {
-  const htmlContent = await fs.readFile(testImgPath, 'utf-8')
+  const htmlContent = await fs.readFile(testImgPath, 'utf-8') // testImgPath = getFixturePath('with-media.html')
   console.log('HTML from fixture:', htmlContent)
 
   expect(htmlContent).toContain('/assets/professions/nodejs.png')
@@ -116,9 +112,36 @@ test('should return right path to file with img, save img', async () => {
     .get('/assets/professions/nodejs.png')
     .reply(200, imageContent)
 
+  await pageLoader(testUrl, pathToTmpDir)
+  // Debug:
+  // console.log('Expected HTML path:', expectedHtmlPath)
+  // console.log('Expected IMG path:', expectedImgPath)
+  
+//  const files = await fs.readdir(pathToTmpDir)  
+//  console.log('Files in temp dir:', files)  
+  
+//   const filesDir = path.join(pathToTmpDir, 'ru-hexlet-io-courses_files')  
+//    try {  
+//   const resourceFiles = await fs.readdir(filesDir)  
+//   console.log('Files in _files dir:', resourceFiles)
+  
+//   for (const file of resourceFiles) {
+//     const stats = await fs.stat(path.join(filesDir, file));
+//     console.log(`- ${file}: ${stats.size} bytes`);
+//   }
+//   } catch (err) {  
+//     console.log('_files directory does not exist!')  
+//   }
+//   const savedHtml1 = await fs.readFile(expectedHtmlPath, 'utf-8');
+//   console.log('\n=== Saved HTML ===');
+//   console.log(savedHtml1);
+//   console.log('\n=== Image src in HTML ===');
+//   const imgSrcMatch = savedHtml1.match(/<img[^>]+src="([^"]+)"/);
+//   console.log('Found img src:', imgSrcMatch ? imgSrcMatch[1] : 'NOT FOUND');
+
   expect(nock.isDone()).toBe(true)
   
-  await expect(fs.access(expectedImgPath))
+  await fs.access(expectedImgPath)
   
   const savedImageContent = await fs.readFile(expectedImgPath)  
   expect(savedImageContent.equals(imageContent)).toBe(true)  
@@ -127,42 +150,4 @@ test('should return right path to file with img, save img', async () => {
   expect(savedHtml).toContain(
     'src="ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png"'
   ) 
-
-  // console.log
-  //   ALL FILES CREATED: [
-  //     'ru-hexlet-io-courses.html',
-  //     'ru-hexlet-io-courses_files',
-  //     'ru-hexlet-io-courses_files/ru-hexlet-io-nodejs.png'
-  //   ]
-
-  //     at Object.log (__tests__/pageLoader.tests.js:98:11)
-
-  // console.log
-  //   EXPECTED PATH: /var/folders/np/86x2pz2n7q56rpgf2zf3zw_w0000gn/T/page-loader-PhHMNH/ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png
-
-  //     at Object.log (__tests__/pageLoader.tests.js:99:11)
-
-  // console.log
-  //   HTML from fixture: <!DOCTYPE html><html lang="ru"><head>
-  //       <meta charset="utf-8">
-  //       <title>Курсы по программированию Хекслет</title>
-  //     </head>
-  //     <body>
-  //       <img src="/assets/professions/nodejs.png" alt="Иконка профессии Node.js-программист" />
-  //       <h3>
-  //         <a href="/professions/nodejs">Node.js-программист</a>
-  //       </h3>
-  //     </body>
-  //   </html>
-
-  // await pageLoader(testUrl, pathToTmpDir)
-  // await expect(fs.access(expectedImgPath)).resolves.toBeUndefined()
-  // // expect(fs.access(expectedImgPath)).resolves.not.toThrow()
-
-  // const savedImageContent = await fs.readFile(expectedImgPath)
-
-  // // проверить пути
-  // expect(savedImageContent.equals(imageContent)).toBe(true)
-  // const savedHtml = await fs.readFile(expectedHtmlPath, 'utf-8')
-  // expect(savedHtml).toContain('src="ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png"')
 })
