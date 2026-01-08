@@ -7,10 +7,9 @@ import { getHtmlFileName, getDirName, getImgName } from './utils/file-name.js'
 import { log } from './logger.js'
 // import { log, logParser, logFs, logError } from './logger.js'
 
-axiosDebug(axios)
+// todo:  getImgName - изменить на более универсальное для ссылок/картинок/медиа
 
-// Реализуйте скачивание всех локальных ресурсов из тегов link и script.
-// Локальные ресурсы - это всё, что находится на том же домене (с учётом поддоменов), что и страница.
+axiosDebug(axios)
 
 function getHtmlPage(url, dir = process.cwd()) {
   return axios.get(url)
@@ -42,24 +41,24 @@ const isLocalResource = (pageUrl, resourceSrc) => {
   }
 }
 
-const downloadImage = (imageUrl, imagePath) => {
-  return axios.get(imageUrl, { responseType: 'arraybuffer' })
-    .then(response => fs.writeFile(imagePath, response.data))
+const downloadResource = (resourceUrl, resourcePath) => {
+  return axios.get(resourceUrl, { responseType: 'arraybuffer' })
+    .then(response => fs.writeFile(resourcePath, response.data))
     .then(() => ({
-      originalUrl: imageUrl,
-      localPath: imagePath,
+      originalUrl: resourceUrl,
+      localPath: resourcePath,
       status: 'success',
     }))
     .catch(error => ({
-      originalUrl: imageUrl,
+      originalUrl: resourceUrl,
       error: error.message,
       status: 'failed',
     }))
 }
 
 function pageloader(url, dir = process.cwd()) {
-  log('=== Starting pageloader ===')
-  log('Output directory: %s', dir)
+  // log('=== Starting pageloader ===')
+  // log('Output directory: %s', dir)
 
   let htmlData
   let $
@@ -76,36 +75,78 @@ function pageloader(url, dir = process.cwd()) {
     .then(() => {
       $ = cheerio.load(htmlData.htmlContent)
 
-      const localImages = []
+      const localResources = []
       $('img').each((i, element) => {
         const src = $(element).attr('src')
         if (src && isLocalResource(url, src)) {
-          const fullImageUrl = new URL(src, url).href
-          const imageName = getImgName(url, src)
-          const imagePath = path.join(dir, imageName)
+          const fullResourceUrl = new URL(src, url).href
+          const resourceName = getImgName(url, src)
+          const resourcePath = path.join(dir, resourceName)
 
-          localImages.push({
+          localResources.push({
             element,
-            originalSrc: src,
-            fullUrl: fullImageUrl,
-            localPath: imagePath,
-            relativePath: imageName,
+            tagName: 'img',
+            attrName: 'src',
+            originalValue: src,
+            fullUrl: fullResourceUrl,
+            localPath: resourcePath,
+            relativePath: resourceName,
           })
         }
       })
 
-      const downloadPromises = localImages.map(img =>
-        downloadImage(img.fullUrl, img.localPath),
+      $('link').each((i, element) => {
+        const href = $(element).attr('href')
+        if (href && isLocalResource(url, href)) {
+          const fullResourceUrl = new URL(href, url).href
+          const resourceName = getImgName(url, href)
+          const resourcePath = path.join(dir, resourceName)
+
+          localResources.push({
+            element,
+            tagName: 'link',
+            attrName: 'href',
+            originalValue: href,
+            fullUrl: fullResourceUrl,
+            localPath: resourcePath,
+            relativePath: resourceName,
+          })
+        }
+      })
+
+      $('script').each((i, element) => {
+        const src = $(element).attr('src')
+        if (src && isLocalResource(url, src)) {
+          const fullResourceUrl = new URL(src, url).href
+          const resourceName = getImgName(url, src)
+          const resourcePath = path.join(dir, resourceName)
+
+          localResources.push({
+            element,
+            tagName: 'script',
+            attrName: 'src',
+            originalValue: src,
+            fullUrl: fullResourceUrl,
+            localPath: resourcePath,
+            relativePath: resourceName,
+          })
+        }
+      })
+
+      // log('Found %d local resources to download', localResources.length)
+
+      const downloadPromises = localResources.map(resource =>
+        downloadResource(resource.fullUrl, resource.localPath),
       )
 
       return Promise.all(downloadPromises)
-        .then(downloadResults => ({ localImages, downloadResults }))
+        .then(downloadResults => ({ localResources, downloadResults }))
     })
-    .then(({ localImages, downloadResults }) => {
-      localImages.forEach((img, index) => {
+    .then(({ localResources, downloadResults }) => {
+      localResources.forEach((resource, index) => {
         const downloadResult = downloadResults[index]
         if (downloadResult.status === 'success') {
-          $(img.element).attr('src', img.relativePath)
+          $(resource.element).attr(resource.attrName, resource.relativePath)
         }
       })
 
