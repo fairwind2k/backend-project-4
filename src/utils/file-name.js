@@ -17,7 +17,7 @@ const getHtmlFileName = url => `${formattedPath(url).newPath}.html`
 
 const getDirName = url => `${formattedPath(url).newPath}_files`
 
-const formattedImgName = (imgUrl) => {
+const formattedName = (imgUrl) => {
   const { hostname, pathname } = new URL(imgUrl)
   const ext = path.extname(pathname)
   const pathWithoutExt = pathname.slice(0, -ext.length)
@@ -25,9 +25,9 @@ const formattedImgName = (imgUrl) => {
   return `${formattedName}${ext}`
 }
 
-const getImgName = (pageUrl, src) => {
-  const fullImgUrl = new URL(src, pageUrl)
-  return `${getDirName(pageUrl)}/${formattedImgName(fullImgUrl.href)}`
+const getAssetPath = (pageUrl, src) => {
+  const fullAssetUrl = new URL(src, pageUrl)
+  return `${getDirName(pageUrl)}/${formattedName(fullAssetUrl.href)}`
 }
 
-export { getHtmlFileName, getDirName, getImgName }
+export { getHtmlFileName, getDirName, getAssetPath }
