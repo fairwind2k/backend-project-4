@@ -1,4 +1,4 @@
-import { test, expect, beforeEach, afterEach } from '@jest/globals'
+import { test, expect, beforeEach, afterEach, afterAll } from '@jest/globals'
 import path, { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
@@ -26,6 +26,8 @@ let expectedImgPath
 beforeEach(async () => {
   logTest('Setting up test environment')
 
+  nock.cleanAll()
+
   pathToTmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'page-loader-')) // проверить что создается папка page-loader
   logTest('Created temp dir: %s', pathToTmpDir)
 
@@ -41,34 +43,48 @@ beforeEach(async () => {
 
 afterEach(async () => {
   logTest('Cleaning up test environment')
-  await fs.rm(pathToTmpDir, { recursive: true, force: true })
-  logTest('Removed temp dir: %s', pathToTmpDir)
+  nock.cleanAll()
+  try {
+    if (pathToTmpDir) {
+      await fs.access(pathToTmpDir)
+      await fs.rm(pathToTmpDir, { recursive: true, force: true })
+      logTest('Removed temp dir: %s', pathToTmpDir)
+    }
+  }
+  catch (error) {
+    console.log(error)
+  }
 })
 
-// afterEach(() => {
-//   fs.rmSync(tempDir, { recursive: true, force: true })
-// })
+afterAll(async () => {
+  nock.cleanAll()
+  nock.restore()
+})
 
 test('should return right path to file', async () => {
   logTest('Test: should return right path to file')
 
   logNock('Creating mock: GET https://ru.hexlet.io/courses')
-  nock('https://ru.hexlet.io')
+  // nock('https://ru.hexlet.io')
+  const scope = nock('https://ru.hexlet.io')
     .get('/courses')
     .reply(200, '')
   logTest('Calling pageloader...')
+
   const actual = await pageLoader(testUrl, pathToTmpDir)
   logTest('Returned path: %s', actual)
   logTest('Expected path: %s', expectedHtmlPath)
 
   expect(actual.htmlFilePath).toBe(expectedHtmlPath)
+  expect(scope.isDone()).toBe(true)
   logTest('Test passed')
 })
 // // Добавить в тесты проверку скачивания ресурсов и изменения HTML.
 // добавить проверку ошибок
 
 test('should be read file on the given path', async () => {
-  nock('https://ru.hexlet.io')
+  // nock('https://ru.hexlet.io')
+  const scope = nock('https://ru.hexlet.io')
     .get('/courses')
     .replyWithFile(200, testFilePath)
 
@@ -79,12 +95,14 @@ test('should be read file on the given path', async () => {
   logTest('Returned path: %s', contents)
   logTest('Expected path: %s', expectedData)
   expect(contents).toBe(expectedData)
+  expect(scope.isDone()).toBe(true)
 })
 
 test('DEBUG: check what is created', async () => {
   const imageContent = Buffer.from('fake image content')
 
-  nock('https://ru.hexlet.io')
+  const scope = nock('https://ru.hexlet.io')
+  // nock('https://ru.hexlet.io')
     .get('/courses')
     .replyWithFile(200, testImgPath)
     .get('/assets/professions/nodejs.png')
@@ -96,6 +114,8 @@ test('DEBUG: check what is created', async () => {
   const allFiles = await fs.readdir(pathToTmpDir, { recursive: true })
   console.log('ALL FILES CREATED:', allFiles)
   console.log('EXPECTED PATH:', expectedImgPath)
+
+  expect(scope.isDone()).toBe(true)
 })
 
 test('should return right path to file with img, save img', async () => {
@@ -105,7 +125,8 @@ test('should return right path to file with img, save img', async () => {
   expect(htmlContent).toContain('/assets/professions/nodejs.png')
 
   const imageContent = Buffer.from('fake image content')
-  nock('https://ru.hexlet.io')
+  const scope = nock('https://ru.hexlet.io')
+  // nock('https://ru.hexlet.io')
     .get('/courses')
     .replyWithFile(200, testImgPath)
     .get('/assets/professions/nodejs.png')
@@ -138,7 +159,8 @@ test('should return right path to file with img, save img', async () => {
   //   const imgSrcMatch = savedHtml1.match(/<img[^>]+src="([^"]+)"/);
   //   console.log('Found img src:', imgSrcMatch ? imgSrcMatch[1] : 'NOT FOUND');
 
-  expect(nock.isDone()).toBe(true)
+  // expect(nock.isDone()).toBe(true)
+  expect(scope.isDone()).toBe(true)
 
   await fs.access(expectedImgPath)
 
