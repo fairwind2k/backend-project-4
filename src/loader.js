@@ -3,11 +3,9 @@ import axiosDebug from 'axios-debug-log'
 import path from 'path'
 import fs from 'fs/promises'
 import * as cheerio from 'cheerio'
-import { getHtmlFileName, getDirName, getImgName } from './utils/file-name.js'
+import { getHtmlFileName, getDirName, getAssetPath } from './utils/file-name.js'
 import { log } from './logger.js'
 // import { log, logParser, logFs, logError } from './logger.js'
-
-// todo:  getImgName - изменить на более универсальное для ссылок/картинок/медиа
 
 axiosDebug(axios)
 
@@ -57,8 +55,8 @@ const downloadResource = (resourceUrl, resourcePath) => {
 }
 
 function pageloader(url, dir = process.cwd()) {
-  // log('=== Starting pageloader ===')
-  // log('Output directory: %s', dir)
+  log('=== Starting pageloader ===')
+  log('Output directory: %s', dir)
 
   let htmlData
   let $
@@ -80,7 +78,7 @@ function pageloader(url, dir = process.cwd()) {
         const src = $(element).attr('src')
         if (src && isLocalResource(url, src)) {
           const fullResourceUrl = new URL(src, url).href
-          const resourceName = getImgName(url, src)
+          const resourceName = getAssetPath(url, src)
           const resourcePath = path.join(dir, resourceName)
 
           localResources.push({
@@ -99,7 +97,7 @@ function pageloader(url, dir = process.cwd()) {
         const href = $(element).attr('href')
         if (href && isLocalResource(url, href)) {
           const fullResourceUrl = new URL(href, url).href
-          const resourceName = getImgName(url, href)
+          const resourceName = getAssetPath(url, href)
           const resourcePath = path.join(dir, resourceName)
 
           localResources.push({
@@ -118,7 +116,7 @@ function pageloader(url, dir = process.cwd()) {
         const src = $(element).attr('src')
         if (src && isLocalResource(url, src)) {
           const fullResourceUrl = new URL(src, url).href
-          const resourceName = getImgName(url, src)
+          const resourceName = getAssetPath(url, src)
           const resourcePath = path.join(dir, resourceName)
 
           localResources.push({
