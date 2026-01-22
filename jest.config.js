@@ -1,23 +1,22 @@
-
 module.exports = {
   testEnvironment: 'node',
 
   testMatch: [
     '**/__tests__/**/*.[jt]s?(x)',
-    '**/?(*.)+(spec|test).[jt]s?(x)'
+    '**/?(*.)+(spec|test).[jt]s?(x)',
   ],
 
   testPathIgnorePatterns: [
     '/node_modules/',
     '/dist/',
-    '/build/'
+    '/build/',
   ],
 
   collectCoverage: false,
   coverageDirectory: 'coverage',
   coveragePathIgnorePatterns: [
     '/node_modules/',
-    '/__tests__/'
+    '/__tests__/',
   ],
 
   clearMocks: true,
@@ -27,4 +26,4 @@ module.exports = {
   testTimeout: 5000,
 
   verbose: true,
-};
+}
