@@ -1,4 +1,5 @@
-module.exports = {
+// jest.config.js
+const config = {
   testEnvironment: 'node',
 
   testMatch: [
@@ -27,3 +28,5 @@ module.exports = {
 
   verbose: true,
 }
+
+export default config
