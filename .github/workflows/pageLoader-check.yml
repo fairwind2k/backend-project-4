@@ -3,19 +3,20 @@ on: push
 jobs:
     build:
         runs-on: ubuntu-latest
+
+        strategy:
+          matrix:
+            node-version: [22.x, 24.x]
+
         steps:
-            - uses: actions/checkout@v3
-            - uses: actions/setup-node@v3
-              with:
-                node-version: '18.x'
-                cache: 'npm'
-            - run: make install    
-            - run: make lint
-            - run: make test
-            - name: Test & publish code coverage
-              uses: paambaati/codeclimate-action@v5.0.0
-              env:
-                CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
-              with:
-                coverageCommand: make test-coverage
-                debug: true
+          - uses: actions/checkout@v6
+
+          - name: Use Node.js ${{ matrix.node-version}}
+            uses: actions/setup-node@v6
+            with:
+              node-version: ${{ matrix.node-version}}
+              cache: 'npm'
+
+          - run: make install
+          - run: make lint
+          - run: make test
