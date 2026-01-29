@@ -1,5 +1,6 @@
 #### Hexlet tests and linter status:
-[![Actions Status](https://github.com/fairwind2k/backend-project-4/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/fairwind2k/backend-project-4/actions) [![Maintainability](https://api.codeclimate.com/v1/badges/a64bcec0320ba56f11ac/maintainability)](https://codeclimate.com/github/fairwind2k/backend-project-4/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/a64bcec0320ba56f11ac/test_coverage)](https://codeclimate.com/github/fairwind2k/backend-project-4/test_coverage)
+[![Actions Status](https://github.com/fairwind2k/backend-project-4/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/fairwind2k/backend-project-4/actions) 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=fairwind2k_backend-project-4&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=fairwind2k_backend-project-4)
 
 ## About a project
 
