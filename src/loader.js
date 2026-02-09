@@ -5,7 +5,6 @@ import fs from 'fs/promises'
 import * as cheerio from 'cheerio'
 import { getHtmlFileName, getDirName, getAssetPath } from './utils/file-name.js'
 import { log } from './logger.js'
-import { createTestScheduler } from 'jest'
 // import { error } from 'console'
 // import { log, logParser, logFs, logError } from './logger.js'
 
@@ -110,7 +109,7 @@ const downloadResource = (resourceUrl, resourcePath) => {
 
       console.error(`Warning: Failed to download resource ${resourceUrl}: ${errorMessage}`)
 
-      throw err
+      throw error
     })
 }
 
