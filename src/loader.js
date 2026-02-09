@@ -5,6 +5,8 @@ import fs from 'fs/promises'
 import * as cheerio from 'cheerio'
 import { getHtmlFileName, getDirName, getAssetPath } from './utils/file-name.js'
 import { log } from './logger.js'
+import { createTestScheduler } from 'jest'
+// import { error } from 'console'
 // import { log, logParser, logFs, logError } from './logger.js'
 
 axiosDebug(axios)
@@ -12,17 +14,55 @@ axiosDebug(axios)
 function getHtmlPage(url, dir = process.cwd()) {
   return axios.get(url)
     .then((response) => {
+      if (response.status !== 200) {
+        const error = new Error(`HTTP ${response.status}: Failed to load page`)
+        error.code = 'HTTP_ERROR'
+        throw error
+      }
       const fileName = getHtmlFileName(url)
       const filePath = path.join(dir, fileName)
+
       return fs.writeFile(filePath, response.data)
         .then(() => ({
           filePath,
           htmlContent: response.data,
         }))
+        .catch((error) => {
+          if (error.code === 'EACCES') {
+            console.error(`Error: Permission denied. Cannot write file to ${filePath}`)
+          }
+          else if (error.code === 'ENOENT') {
+            console.error(`Error: Directory does not exist: ${dir}`)
+          }
+          else {
+            console.error(`Error: Failed to save HTML file: ${error.message}`)
+          }
+          throw error
+        })
     })
     .catch((error) => {
-      console.error('Ошибка загрузки страницы:', error.message)
-      throw error
+      if (error.code === 'HTTP_ERROR') {
+        throw error
+      }
+      else if (error.response) {
+        console.error(`Error: Failed to load page ${url}. HTTP status: ${error.response.status}`)
+        const httpError = new Error(`HTTP ${error.response.status}`)
+        httpError.code = 'HTTP_ERROR'
+        throw httpError
+      }
+      else if (error.request) {
+        console.error(`Error: No response from ${url}. Check your network connection.`)
+        const networkError = new Error('Network error')
+        networkError.code = 'NETWORK_ERROR'
+        throw networkError
+      }
+      else if (error.code === 'EACCES' || error.code === 'ENOENT') {
+        throw error
+      }
+      else {
+        console.error(`Error: Failed to load page ${url}: ${error.message}`)
+        throw error
+      }
     })
 };
 
@@ -41,17 +81,37 @@ const isLocalResource = (pageUrl, resourceSrc) => {
 
 const downloadResource = (resourceUrl, resourcePath) => {
   return axios.get(resourceUrl, { responseType: 'arraybuffer' })
-    .then(response => fs.writeFile(resourcePath, response.data))
+    .then((response) => {
+      if (response.status !== 200) {
+        throw new Error(`HTTP ${response.status}`)
+      }
+      return fs.writeFile(resourcePath, response.data)
+    })
     .then(() => ({
       originalUrl: resourceUrl,
       localPath: resourcePath,
       status: 'success',
     }))
-    .catch(error => ({
-      originalUrl: resourceUrl,
-      error: error.message,
-      status: 'failed',
-    }))
+    .catch((error) => {
+      let errorMessage = error.message
+
+      if (error.response) {
+        errorMessage = `HTTP ${error.response.status}`
+      }
+      else if (error.request) {
+        errorMessage = 'Network error'
+      }
+      else if (error.code === 'EACCES') {
+        errorMessage = 'Permission denied'
+      }
+      else if (error.code === 'ENOENT') {
+        errorMessage = 'Directory does not exist'
+      }
+
+      console.error(`Warning: Failed to download resource ${resourceUrl}: ${errorMessage}`)
+
+      throw err
+    })
 }
 
 function pageloader(url, dir = process.cwd()) {
@@ -62,13 +122,45 @@ function pageloader(url, dir = process.cwd()) {
   let $
   let dirPath
 
-  return fs.mkdir(dir, { recursive: true })
+  return fs.access(dir)
+    .catch((error) => {
+      if (error.code === 'ENOENT') {
+        throw new Error('Directory does not exist')
+      }
+      throw error
+    })
+    .then(() => fs.mkdir(dir, { recursive: true }))
+    .catch((error) => {
+      if (error.code === 'EACCES') {
+        console.error(`Error: Permission denied. Cannot create directory ${dir}`)
+      }
+      else if (error.code === 'ENOTDIR') {
+        console.error(`Error: ${dir} exists but is not a directory`)
+      }
+      else {
+        console.error(`Error: Failed to create directory ${dir}: ${error.message}`)
+      }
+      throw error
+    })
     .then(() => getHtmlPage(url, dir))
     .then((result) => {
       htmlData = result
       const dirName = getDirName(url)
       dirPath = path.join(dir, dirName)
+
       return fs.mkdir(dirPath, { recursive: true })
+        .catch((error) => {
+          if (error.code === 'EACCES') {
+            console.error(`Error: Permission denied. Cannot create directory ${dirPath}`)
+          }
+          else if (error.code === 'ENOTDIR') {
+            console.error(`Error: ${dirPath} exists but is not a directory`)
+          }
+          else {
+            console.error(`Error: Failed to create resourses directory ${dirPath}: ${error.message}`)
+          }
+          throw error
+        })
     })
     .then(() => {
       $ = cheerio.load(htmlData.htmlContent)
@@ -150,6 +242,19 @@ function pageloader(url, dir = process.cwd()) {
 
       const updatedHtml = $.html()
       return fs.writeFile(htmlData.filePath, updatedHtml)
+
+        .catch((error) => {
+          if (error.code === 'EACCES') {
+            console.error(`Error: Permission denied. Cannot update HTML file ${htmlData.filePath}`)
+          }
+          else if (error.code === 'ENOENT') {
+            console.error(`Error: Directory does not exist for file ${htmlData.filePath}`)
+          }
+          else {
+            console.error(`Error: Failed to update HTML file: ${error.message}`)
+          }
+          throw error
+        })
     })
     .then(() => ({
       htmlFilePath: htmlData.filePath,
@@ -157,7 +262,6 @@ function pageloader(url, dir = process.cwd()) {
       dirPath,
     }))
     .catch((error) => {
-      console.error('Ошибка в pageloader:', error.message)
       throw error
     })
 }
