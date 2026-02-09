@@ -79,8 +79,6 @@ test('should return right path to file', async () => {
   expect(scope.isDone()).toBe(true)
   logTest('Test passed')
 })
-// // Добавить в тесты проверку скачивания ресурсов и изменения HTML.
-// добавить проверку ошибок
 
 test('should be read file on the given path', async () => {
   // nock('https://ru.hexlet.io')
@@ -171,4 +169,88 @@ test('should return right path to file with img, save img', async () => {
   expect(savedHtml).toContain(
     'src="ru-hexlet-io-courses_files/ru-hexlet-io-assets-professions-nodejs.png"',
   )
+})
+// negative cases:
+
+test('should throw error when URL returns 404', async () => {
+  logTest('Test: should throw error on 404')
+
+  const scope = nock('https://ru.hexlet.io')
+    .get('/courses')
+    .reply(404, 'Not Found')
+
+  await expect(async () => {
+    await pageLoader(testUrl, pathToTmpDir)
+  }).rejects.toThrow()
+
+  expect(scope.isDone()).toBe(true)
+  logTest('Test passed: 404 error thrown')
+})
+
+test('should throw error when URL returns 500', async () => {
+  logTest('Test: should throw error on 500')
+
+  const scope = nock('https://ru.hexlet.io')
+    .get('/courses')
+    .reply(500, 'Internal Server Error')
+
+  await expect(async () => {
+    await pageLoader(testUrl, pathToTmpDir)
+  }).rejects.toThrow()
+
+  expect(scope.isDone()).toBe(true)
+  logTest('Test passed: 500 error thrown')
+})
+
+test('should throw error on network failure', async () => {
+  logTest('Test: should throw error on network failure')
+
+  const scope = nock('https://ru.hexlet.io')
+    .get('/courses')
+    .replyWithError('Network error occurred')
+
+  await expect(async () => {
+    await pageLoader(testUrl, pathToTmpDir)
+  }).rejects.toThrow()
+
+  expect(scope.isDone()).toBe(true)
+  logTest('Test passed: network error thrown')
+})
+
+test('should throw error when output directory does not exist', async () => {
+  logTest('Test: should throw error when directory does not exist')
+
+  const nonExistentDir = path.join(pathToTmpDir, 'non-existent-dir', 'nested')
+
+  await expect(async () => {
+    await pageLoader(testUrl, nonExistentDir)
+  }).rejects.toThrow()
+
+  logTest('Test passed: non-existent directory error thrown')
+})
+
+test('should throw error on invalid URL', async () => {
+  logTest('Test: should throw error on invalid URL')
+
+  await expect(async () => {
+    await pageLoader('not-a-valid-url', pathToTmpDir)
+  }).rejects.toThrow
+  logTest('Test passed: invalid URL error thrown')
+})
+
+test('should throw error when resource download fails', async () => {
+  logTest('Test: should throw error when resource download fails')
+
+  const scope = nock('https://ru.hexlet.io')
+    .get('/courses')
+    .replyWithFile(200, testImgPath)
+    .get('/assets/professions/nodejs.png')
+    .reply(404, 'Image not found')
+
+  await expect(async () => {
+    await pageLoader(testUrl, pathToTmpDir)
+  }).rejects.toThrow()
+
+  expect(scope.isDone()).toBe(true)
+  logTest('Test passed: resource download error thrown')
 })
