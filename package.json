@@ -11,6 +11,7 @@
     "dev": "node bin/page-loader.js -o ./page-loader https://fairwind2k.github.io/random_animal/",
     "dev:debug": "DEBUG=* node bin/page-loader.js ",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:coverage": "jest --coverage",
     "test:nock": "NODE_DEBUG=nock:* npm test",
     "test:debug": "DEBUG=page-loader:* npm test",
     "test:verbose": "DEBUG=* npm test",
@@ -18,7 +19,8 @@
     "start:debug": "DEBUG=page-loader:* node bin/page-loader.js",
     "start:all": "DEBUG=* node bin/page-loader.js",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "lint:report": "eslint . --ext .js,.jsx,.ts,.tsx --format json --output-file eslint-report.json"
   },
   "repository": {
     "type": "git",
