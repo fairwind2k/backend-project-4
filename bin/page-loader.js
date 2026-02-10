@@ -15,11 +15,11 @@ program
     const options = program.opts()
     pageloader(url, options.output)
       .then((result) => {
-        console.log(result.htmlFilePath)
+        console.log(`Page was successfully downloaded into: ${result.htmlFilePath}`)
         return result
       })
       .then((result) => {
-        console.log(result.dirName)
+        console.log(`Resorse directory: '${result.dirName}'`)
         return result
       })
       .catch((error) => {
