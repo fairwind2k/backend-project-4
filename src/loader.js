@@ -5,7 +5,7 @@ import fs from 'fs/promises'
 import * as cheerio from 'cheerio'
 import { getHtmlFileName, getDirName, getAssetPath } from './utils/file-name.js'
 import { log } from './logger.js'
-// import { error } from 'console'
+import Listr from 'listr'
 // import { log, logParser, logFs, logError } from './logger.js'
 
 axiosDebug(axios)
@@ -124,7 +124,7 @@ function pageloader(url, dir = process.cwd()) {
   return fs.access(dir)
     .catch((error) => {
       if (error.code === 'ENOENT') {
-        throw new Error('Directory does not exist')
+        return
       }
       throw error
     })
@@ -221,15 +221,42 @@ function pageloader(url, dir = process.cwd()) {
           })
         }
       })
+      if (localResources.length === 0) {
+        console.log('No local resources found to download')
+        return { localResources, downloadResults: [] }
+      }
+      const tasks = localResources.map(resource => ({
+        title: `${path.basename(resource.localPath)}`,
+        task: () => downloadResource(resource.fullUrl, resource.localPath),
+      }))
+
+      const listr = new Listr(tasks, {
+        concurrent: true,
+        exitOnError: false,
+      })
 
       // log('Found %d local resources to download', localResources.length)
 
-      const downloadPromises = localResources.map(resource =>
-        downloadResource(resource.fullUrl, resource.localPath),
-      )
-
-      return Promise.all(downloadPromises)
-        .then(downloadResults => ({ localResources, downloadResults }))
+      return listr.run()
+        .then(() => {
+          return Promise.allSettled(
+            localResources.map(resource =>
+              fs.access(resource.localPath).then(() => ({
+                originalUrl: resource.fullUrl,
+                localPath: resource.localPath,
+                status: 'success',
+              })).catch(() => ({
+                originalUrl: resource.fullUrl,
+                localPath: resource.localPath,
+                status: 'error',
+              })),
+            ),
+          )
+        })
+        .then((results) => {
+          const downloadResults = results.map(r => r.value)
+          return { localResources, downloadResults }
+        })
     })
     .then(({ localResources, downloadResults }) => {
       localResources.forEach((resource, index) => {
