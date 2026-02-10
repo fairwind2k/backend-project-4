@@ -13,8 +13,15 @@ const config = {
     '/build/',
   ],
 
-  collectCoverage: false,
+  collectCoverage: true,
   coverageDirectory: 'coverage',
+  coverageReporters: ['lcov', 'text', 'html'],
+  collectCoverageFrom: [
+    'src/**/*.{js,jsx,ts,tsx}',
+    '!src/**/*.spec.{js,jsx,ts,tsx}',
+    '!src/**/*.test.{js,jsx,ts,tsx}',
+    '!src/**/index.{js,ts}',
+  ],
   coveragePathIgnorePatterns: [
     '/node_modules/',
     '/__tests__/',
