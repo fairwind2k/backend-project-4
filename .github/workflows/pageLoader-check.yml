@@ -10,6 +10,8 @@ jobs:
 
         steps:
           - uses: actions/checkout@v6
+            with:
+              fetch-depth: 0 
 
           - name: Use Node.js ${{ matrix.node-version}}
             uses: actions/setup-node@v6
@@ -20,3 +22,8 @@ jobs:
           - run: make install
           - run: make lint
           - run: make test
+          - run: make test-coverage
+          - name: SonarQube Scan
+            uses: SonarSource/sonarqube-scan-action@v7
+            env:
+              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
