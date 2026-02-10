@@ -2,7 +2,7 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "type": "module",
-    "engines": {
+  "engines": {
     "node": ">=22.0"
   },
   "description": "[![Actions Status](https://github.com/fairwind2k/backend-project-4/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/fairwind2k/backend-project-4/actions)",
@@ -11,7 +11,6 @@
     "dev": "node bin/page-loader.js -o ./page-loader https://fairwind2k.github.io/random_animal/",
     "dev:debug": "DEBUG=* node bin/page-loader.js ",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    
     "test:nock": "NODE_DEBUG=nock:* npm test",
     "test:debug": "DEBUG=page-loader:* npm test",
     "test:verbose": "DEBUG=* npm test",
@@ -48,6 +47,7 @@
     "axios-debug-log": "^1.0.0",
     "cheerio": "^1.2.0",
     "commander": "^14.0.2",
-    "debug": "^4.4.3"
+    "debug": "^4.4.3",
+    "listr": "^0.14.3"
   }
 }
