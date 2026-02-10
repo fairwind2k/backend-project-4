@@ -13,11 +13,14 @@ lint:
 fix:
 	npx eslint --fix .
 
+lint-report:
+	npx eslint . --ext .js,.jsx,.ts,.tsx --format json --output-file eslint-report.json
+
 test:
 	npx jest
 
 test-coverage:
-	npm test -- --coverage --coverageProvider=v8
+	npx jest --coverage
 
 example:
 	node bin/page-loader.js -o ./page-loader https://fairwind2k.github.io/random_animal/
