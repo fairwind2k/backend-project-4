@@ -3,6 +3,8 @@
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=fairwind2k_backend-project-4&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=fairwind2k_backend-project-4)
 
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=fairwind2k_backend-project-4&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=fairwind2k_backend-project-4)
+
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=fairwind2k_backend-project-4&metric=coverage)](https://sonarcloud.io/summary/new_code?id=fairwind2k_backend-project-4)
 
 ## About a project
