@@ -7,13 +7,12 @@ import { log } from './logger.js'
 import Listr from 'listr'
 // import { log, logParser, logFs, logError } from './logger.js'
 import { isValidUrl } from './utils/validators.js'
-import { getHtmlFileName, getDirName } from './utils/file-name.js'
+import { getDirName } from './utils/file-name.js'
 import { checkDirectory } from './modules/directory-manger.js'
 import { findLocalResources, updateHtmlWithLocalPaths } from './utils/parsers.js'
 import { createDownloadTasks } from './utils/task-builder.js'
 
 import getHtmlPage from './modules/html-loader.js'
-
 
 axiosDebug(axios)
 
@@ -46,12 +45,12 @@ function pageloader(url, dir = process.cwd()) {
         log('No local resources found to download')
         return
       }
-      const tasks = createDownloadTasks(localResources)
+      downloadResults = []
+      const tasks = createDownloadTasks(localResources, downloadResults)
       const listr = new Listr(tasks, { concurrent: true, exitOnError: false })
       return listr.run()
     })
-    .then((results) => {
-      downloadResults = results || []
+    .then(() => {
       if (localResources.length > 0) {
         updateHtmlWithLocalPaths($, localResources, downloadResults)
       }
@@ -64,4 +63,4 @@ function pageloader(url, dir = process.cwd()) {
     }))
 }
 
- export { pageloader }
+export { pageloader }

@@ -1,20 +1,19 @@
 import axios from 'axios'
 import fs from 'fs/promises'
-import { validateHttpResponse } from '../utils/validators'
-import { prepareFileData } from '../utils/parsers'
-import { handleFileWriteError, handleHttpError } from '../errors/handlers'
-
+import { validateHttpResponse } from '../utils/validators.js'
+import { prepareFileData } from '../utils/parsers.js'
+import { handleFileWriteError, handleHttpError } from '../errors/handlers.js'
 
 function getHtmlPage(url, dir = process.cwd()) {
   let fileData
-  
+
   return axios.get(url)
-    .then((response) => validateHttpResponse(response, url))
+    .then(response => validateHttpResponse(response, url))
     .then((response) => {
       fileData = prepareFileData(response, url, dir)
       return fileData
     })
-    .then((data) => fs.writeFile(data.filePath, data.data))
+    .then(data => fs.writeFile(data.filePath, data.data))
     .then(() => ({
       filePath: fileData.filePath,
       htmlContent: fileData.htmlContent,
@@ -27,4 +26,4 @@ function getHtmlPage(url, dir = process.cwd()) {
     })
 }
 
-export default getHtmlPage;
+export default getHtmlPage
