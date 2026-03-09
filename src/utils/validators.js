@@ -1,4 +1,3 @@
-
 const isValidUrl = (url) => {
   if (typeof url !== 'string') {
     const error = new Error('URL must be a string')
@@ -13,7 +12,8 @@ const isValidUrl = (url) => {
       throw error
     }
     return urlObj
-  } catch (error) {
+  }
+  catch (error) {
     if (error.code === 'INVALID_PROTOCOL') {
       throw error
     }
@@ -23,7 +23,7 @@ const isValidUrl = (url) => {
   }
 }
 
-const validateHttpResponse = (response, url) => {
+const validateHttpResponse = (response) => {
   if (response.status !== 200) {
     const error = new Error(`HTTP ${response.status}: Failed to load page`)
     error.code = 'HTTP_ERROR'
@@ -39,15 +39,14 @@ const isLocalResource = (pageUrl, resourceSrc) => {
     const resourceHost = resourceUrl.hostname
 
     return resourceHost === pageHost || resourceHost.endsWith(`.${pageHost}`)
-  } catch {
+  }
+  catch {
     return false
   }
 }
 
-
-
-export { 
+export {
   isValidUrl,
   validateHttpResponse,
-  isLocalResource
- }
+  isLocalResource,
+}

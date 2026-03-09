@@ -1,7 +1,6 @@
-import path, { dirname, join } from 'path'
-import * as cheerio from 'cheerio'
-import { getHtmlFileName, getAssetPath } from "./file-name"
-import { isLocalResource } from "./validators"
+import path from 'path'
+import { getHtmlFileName, getAssetPath } from './file-name.js'
+import { isLocalResource } from './validators.js'
 
 const prepareFileData = (response, url, dir) => {
   const fileName = getHtmlFileName(url)
@@ -14,7 +13,7 @@ const prepareFileData = (response, url, dir) => {
 }
 
 const findLocalResources = (url, $, dir) => {
-  const localResources = [] 
+  const localResources = []
 
   const resourceSelectors = [
     { selector: 'img', attr: 'src' },
@@ -42,7 +41,7 @@ const findLocalResources = (url, $, dir) => {
     })
   })
 
-  return localResources 
+  return localResources
 }
 
 const updateHtmlWithLocalPaths = ($, localResources, downloadResults) => {
@@ -63,7 +62,7 @@ const updateHtmlWithLocalPaths = ($, localResources, downloadResults) => {
 }
 
 export {
-    prepareFileData,
-    findLocalResources,
-    updateHtmlWithLocalPaths
+  prepareFileData,
+  findLocalResources,
+  updateHtmlWithLocalPaths,
 }
