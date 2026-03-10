@@ -8,7 +8,7 @@ import Listr from 'listr'
 // import { log, logParser, logFs, logError } from './logger.js'
 import { isValidUrl } from './utils/validators.js'
 import { getDirName } from './utils/file-name.js'
-import { checkDirectory } from './modules/directory-manger.js'
+import { checkDirectory, validateDirectory } from './modules/directory-manger.js'
 import { findLocalResources, updateHtmlWithLocalPaths } from './utils/parsers.js'
 import { createDownloadTasks } from './utils/task-builder.js'
 
@@ -28,7 +28,7 @@ function pageloader(url, dir = process.cwd()) {
 
   return Promise.resolve()
     .then(() => isValidUrl(url))
-    .then(() => checkDirectory(dir))
+    .then(() => validateDirectory(dir))
     .then(() => getHtmlPage(url, dir))
     .then((result) => {
       htmlData = result
