@@ -20,9 +20,9 @@ const getDirName = url => `${formattedPath(url).newPath}_files`
 const formattedName = (imgUrl) => {
   const { hostname, pathname } = new URL(imgUrl)
   const ext = path.extname(pathname)
-  const pathWithoutExt = pathname.slice(0, -ext.length)
+  const pathWithoutExt = ext ? pathname.slice(0, -ext.length) : pathname
   const formattedName = formattedStr(`${hostname}${pathWithoutExt}`)
-  return `${formattedName}${ext}`
+  return `${formattedName}${ext || '.html'}`
 }
 
 const getAssetPath = (pageUrl, src) => {
