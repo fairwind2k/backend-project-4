@@ -28,7 +28,7 @@ function pageloader(url, dir = process.cwd()) {
 
   return Promise.resolve()
     .then(() => isValidUrl(url))
-    .then(() => fs.access(dir))
+    .then(() => checkDirectory(dir))
     .then(() => getHtmlPage(url, dir))
     .then((result) => {
       htmlData = result

@@ -15,7 +15,7 @@ const checkDirectory = (dir) => {
     })
     .catch((error) => {
       if (error.code === 'ENOENT') {
-        return fs.mkdir(dir, { recursive: true })
+        return fs.mkdir(dir)
           .then(() => dir)
       }
       throw error
