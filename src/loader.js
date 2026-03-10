@@ -25,7 +25,6 @@ function pageloader(url, dir = process.cwd()) {
   let dirPath
   let localResources
   let downloadResults
-  let listrError
 
   return Promise.resolve()
     .then(() => isValidUrl(url))
@@ -49,7 +48,7 @@ function pageloader(url, dir = process.cwd()) {
       downloadResults = []
       const tasks = createDownloadTasks(localResources, downloadResults)
       const listr = new Listr(tasks, { concurrent: true, exitOnError: false })
-      return listr.run().catch((error) => { listrError = error })
+      return listr.run().catch(() => {})
     })
     .then(() => {
       if (localResources.length > 0) {
@@ -57,16 +56,11 @@ function pageloader(url, dir = process.cwd()) {
       }
     })
     .then(() => fs.writeFile(htmlData.filePath, $.html()))
-    .then(() => {
-      if (listrError) {
-        throw listrError
-      }
-      return {
-        htmlFilePath: htmlData.filePath,
-        dirName: path.basename(dirPath),
-        dirPath,
-      }
-    })
+    .then(() => ({
+      htmlFilePath: htmlData.filePath,
+      dirName: path.basename(dirPath),
+      dirPath,
+    }))
 }
 
 export { pageloader }
