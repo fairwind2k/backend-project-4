@@ -48,7 +48,7 @@ function pageloader(url, dir = process.cwd()) {
       downloadResults = []
       const tasks = createDownloadTasks(localResources, downloadResults)
       const listr = new Listr(tasks, { concurrent: true, exitOnError: false })
-      return listr.run()
+      return listr.run().catch(() => {})
     })
     .then(() => {
       if (localResources.length > 0) {
