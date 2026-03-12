@@ -38,7 +38,7 @@ const isLocalResource = (pageUrl, resourceSrc) => {
     const resourceUrl = new URL(resourceSrc, pageUrl)
     const resourceHost = resourceUrl.hostname
 
-    return resourceHost === pageHost || resourceHost.endsWith(`.${pageHost}`)
+    return resourceHost === pageHost
   }
   catch {
     return false
