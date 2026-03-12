@@ -36,7 +36,7 @@ const downloadResource = (resourceUrl, resourcePath) => {
       if (error.code === 'HTTP_ERROR' || error.request) {
         return createErrorResult(error, resourceUrl, resourcePath)
       }
-      throw error
+      return createErrorResult(error, resourceUrl, resourcePath)
     })
 }
 
