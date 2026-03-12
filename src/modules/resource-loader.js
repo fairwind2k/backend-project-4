@@ -2,7 +2,7 @@ import axios from 'axios'
 import path from 'path'
 import fs from 'fs/promises'
 import { validateHttpResponse } from '../utils/validators.js'
-import { handleFileWriteError, handleHttpError } from '../errors/handlers.js'
+import { createErrorResult } from '../errors/handlers.js'
 
 const downloadResource = (resourceUrl, resourcePath) => {
   let responseData
@@ -24,14 +24,19 @@ const downloadResource = (resourceUrl, resourcePath) => {
     .catch((error) => {
       if (error.code === 'EACCES' || error.code === 'ENOENT') {
         const dir = path.dirname(resourcePath)
-        handleFileWriteError(error, resourcePath, dir)
+        const fsError = new Error(`Directory does not exist: ${dir}`)
+        fsError.code = error.code
+        return createErrorResult(fsError, resourceUrl, resourcePath)
       }
-      else if (error.code === 'HTTP_ERROR' || error.response || error.request) {
-        handleHttpError(error, resourceUrl)
+      if (error.response) {
+        const httpError = new Error(`HTTP ${error.response.status}: Failed to load ${resourceUrl}`)
+        httpError.code = 'HTTP_ERROR'
+        return createErrorResult(httpError, resourceUrl, resourcePath)
       }
-      else {
-        throw error
+      if (error.code === 'HTTP_ERROR' || error.request) {
+        return createErrorResult(error, resourceUrl, resourcePath)
       }
+      throw error
     })
 }
 

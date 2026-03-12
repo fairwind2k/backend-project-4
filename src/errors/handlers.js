@@ -34,4 +34,13 @@ const handleFileWriteError = (error, filePath, dir) => {
   throw error
 }
 
-export { handleFileWriteError, handleHttpError }
+const createErrorResult = (error, resourceUrl, resourcePath) => {
+  return {
+    originalUrl: resourceUrl,
+    localPath: resourcePath,
+    status: 'error',
+    error,
+  }
+}
+
+export { handleFileWriteError, handleHttpError, createErrorResult }

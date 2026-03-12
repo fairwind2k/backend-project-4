@@ -56,11 +56,17 @@ function pageloader(url, dir = process.cwd()) {
       }
     })
     .then(() => fs.writeFile(htmlData.filePath, $.html()))
-    .then(() => ({
-      htmlFilePath: htmlData.filePath,
-      dirName: path.basename(dirPath),
-      dirPath,
-    }))
+    .then(() => {
+      const failedResult = downloadResults?.find(result => result?.status === 'error')
+      if (failedResult) {
+        throw failedResult.error
+      }
+      return {
+        htmlFilePath: htmlData.filePath,
+        dirName: path.basename(dirPath),
+        dirPath,
+      }
+    })
 }
 
 export { pageloader }
