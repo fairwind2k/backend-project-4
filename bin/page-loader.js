@@ -9,7 +9,6 @@ program
   .version('1.0.0')
   .helpOption('-h --help', 'display help for command')
   .option('-o, --output [dir]', 'output dir', process.cwd())
-  // .option('-o, --output [dir]', 'output dir', '/home/user/current-dir')
   .arguments('<url>')
   .action((url) => {
     const options = program.opts()
