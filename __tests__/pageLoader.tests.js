@@ -6,6 +6,8 @@ import os from 'os'
 import nock from 'nock'
 import { logTest, logNock } from '../src/logger.js'
 import pageLoader from '../src/index.js'
+import { checkDirectory, validateDirectory } from '../src/modules/directory-manger.js'
+import { isValidUrl, validateHttpResponse, isLocalResource } from '../src/utils/validators.js'
 
 nock.disableNetConnect()
 
@@ -222,4 +224,100 @@ test('should throw error when resource download fails', async () => {
 
   expect(scope.isDone()).toBe(true)
   logTest('Test passed: resource download error thrown')
+})
+
+// directory-manager tests:
+test('checkDirectory should throw ENOTDIR when path is a file', async () => {
+  logTest('Test: checkDirectory throws ENOTDIR for a file')
+
+  const filePath = path.join(pathToTmpDir, 'not-a-dir.txt')
+  await fs.writeFile(filePath, 'some content')
+
+  await expect(async () => {
+    await checkDirectory(filePath)
+  }).rejects.toThrow('exists but is not a directory')
+
+  logTest('Test passed: ENOTDIR thrown')
+})
+
+test('checkDirectory should throw ENOENT when parent directory does not exist', async () => {
+  logTest('Test: checkDirectory throws ENOENT for missing parent')
+
+  const deepPath = path.join(pathToTmpDir, 'non-existent', 'nested', 'dir')
+
+  await expect(async () => {
+    await checkDirectory(deepPath)
+  }).rejects.toThrow('Directory does not exist')
+
+  logTest('Test passed: ENOENT thrown for missing parent')
+})
+
+test('checkDirectory should create directory when it does not exist', async () => {
+  logTest('Test: checkDirectory creates missing directory')
+
+  const newDir = path.join(pathToTmpDir, 'new-dir')
+
+  const result = await checkDirectory(newDir)
+
+  expect(result).toBe(newDir)
+  const stats = await fs.stat(newDir)
+  expect(stats.isDirectory()).toBe(true)
+
+  logTest('Test passed: directory created')
+})
+
+test('validateDirectory should throw ENOTDIR when path is a file', async () => {
+  logTest('Test: validateDirectory throws ENOTDIR for a file')
+
+  const filePath = path.join(pathToTmpDir, 'not-a-dir.txt')
+  await fs.writeFile(filePath, 'some content')
+
+  await expect(async () => {
+    await validateDirectory(filePath)
+  }).rejects.toThrow('exists but is not a directory')
+
+  logTest('Test passed: ENOTDIR thrown')
+})
+
+test('validateDirectory should throw ENOENT when directory does not exist', async () => {
+  logTest('Test: validateDirectory throws ENOENT for non-existent dir')
+
+  const nonExistentDir = path.join(pathToTmpDir, 'does-not-exist')
+
+  await expect(async () => {
+    await validateDirectory(nonExistentDir)
+  }).rejects.toThrow('Directory does not exist')
+
+  logTest('Test passed: ENOENT thrown')
+})
+
+// validators tests:
+test('isValidUrl should throw INVALID_URL for invalid URL', () => {
+  logTest('Test: isValidUrl throws for invalid URL')
+
+  expect(() => {
+    isValidUrl('not-a-valid-url')
+  }).toThrow('Invalid URL: not-a-valid-url')
+
+  logTest('Test passed: INVALID_URL thrown')
+})
+
+test('validateHttpResponse should throw HTTP_ERROR for non-200 status', () => {
+  logTest('Test: validateHttpResponse throws for non-200 status')
+
+  expect(() => {
+    validateHttpResponse({ status: 404 })
+  }).toThrow('HTTP 404: Failed to load page')
+
+  logTest('Test passed: HTTP_ERROR thrown')
+})
+
+test('isLocalResource should return false for external resource', () => {
+  logTest('Test: isLocalResource returns false for external resource')
+
+  const result = isLocalResource('https://ru.hexlet.io/courses', 'https://cdn.example.com/image.png')
+
+  expect(result).toBe(false)
+
+  logTest('Test passed: external resource detected')
 })
