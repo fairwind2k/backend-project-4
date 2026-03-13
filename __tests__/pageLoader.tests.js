@@ -8,6 +8,8 @@ import { logTest, logNock } from '../src/logger.js'
 import pageLoader from '../src/index.js'
 import { checkDirectory, validateDirectory } from '../src/modules/directory-manger.js'
 import { isValidUrl, validateHttpResponse, isLocalResource } from '../src/utils/validators.js'
+import { downloadResource } from '../src/modules/resource-loader.js'
+import { handleHttpError, handleFileWriteError } from '../src/errors/handlers.js'
 
 nock.disableNetConnect()
 
@@ -93,24 +95,6 @@ test('should be read file on the given path', async () => {
   logTest('Returned path: %s', contents)
   logTest('Expected path: %s', expectedData)
   expect(contents).toBe(expectedData)
-  expect(scope.isDone()).toBe(true)
-})
-
-test('DEBUG: check what is created', async () => {
-  const imageContent = Buffer.from('fake image content')
-
-  const scope = nock('https://ru.hexlet.io')
-    .get('/courses')
-    .replyWithFile(200, testImgPath)
-    .get('/assets/professions/nodejs.png')
-    .reply(200, imageContent)
-
-  await pageLoader(testUrl, pathToTmpDir)
-
-  const allFiles = await fs.readdir(pathToTmpDir, { recursive: true })
-  console.log('ALL FILES CREATED:', allFiles)
-  console.log('EXPECTED PATH:', expectedImgPath)
-
   expect(scope.isDone()).toBe(true)
 })
 
@@ -205,7 +189,7 @@ test('should throw error on invalid URL', async () => {
 
   await expect(async () => {
     await pageLoader('not-a-valid-url', pathToTmpDir)
-  }).rejects.toThrow
+  }).rejects.toThrow()
   logTest('Test passed: invalid URL error thrown')
 })
 
@@ -292,6 +276,26 @@ test('validateDirectory should throw ENOENT when directory does not exist', asyn
 })
 
 // validators tests:
+test('isValidUrl should throw INVALID_TYPE when URL is not a string', () => {
+  logTest('Test: isValidUrl throws INVALID_TYPE for non-string')
+
+  expect(() => {
+    isValidUrl(12345)
+  }).toThrow('URL must be a string')
+
+  logTest('Test passed: INVALID_TYPE thrown')
+})
+
+test('isValidUrl should throw INVALID_PROTOCOL for unsupported protocol', () => {
+  logTest('Test: isValidUrl throws INVALID_PROTOCOL for ftp')
+
+  expect(() => {
+    isValidUrl('ftp://example.com/file')
+  }).toThrow('Unsupported protocol: ftp:')
+
+  logTest('Test passed: INVALID_PROTOCOL thrown')
+})
+
 test('isValidUrl should throw INVALID_URL for invalid URL', () => {
   logTest('Test: isValidUrl throws for invalid URL')
 
@@ -320,4 +324,86 @@ test('isLocalResource should return false for external resource', () => {
   expect(result).toBe(false)
 
   logTest('Test passed: external resource detected')
+})
+
+// downloadResource tests:
+test('downloadResource should return error result when directory does not exist (ENOENT)', async () => {
+  logTest('Test: downloadResource returns error on ENOENT')
+
+  const resourceUrl = 'https://ru.hexlet.io/assets/image.png'
+  const resourcePath = path.join(pathToTmpDir, 'non-existent', 'image.png')
+
+  const scope = nock('https://ru.hexlet.io')
+    .get('/assets/image.png')
+    .reply(200, Buffer.from('image data'))
+
+  const result = await downloadResource(resourceUrl, resourcePath)
+
+  expect(result.status).toBe('error')
+  expect(result.error.code).toBe('ENOENT')
+  expect(result.error.message).toContain('Directory does not exist')
+  expect(result.originalUrl).toBe(resourceUrl)
+  expect(result.localPath).toBe(resourcePath)
+  expect(scope.isDone()).toBe(true)
+
+  logTest('Test passed: ENOENT error result returned')
+})
+
+test('downloadResource should return error result on network error', async () => {
+  logTest('Test: downloadResource returns error on network error')
+
+  const resourceUrl = 'https://ru.hexlet.io/assets/image.png'
+  const resourcePath = path.join(pathToTmpDir, 'image.png')
+
+  const scope = nock('https://ru.hexlet.io')
+    .get('/assets/image.png')
+    .replyWithError('Connection refused')
+
+  const result = await downloadResource(resourceUrl, resourcePath)
+
+  expect(result.status).toBe('error')
+  expect(result.originalUrl).toBe(resourceUrl)
+  expect(result.localPath).toBe(resourcePath)
+  expect(scope.isDone()).toBe(true)
+
+  logTest('Test passed: network error result returned')
+})
+
+// error handlers tests:
+test('handleHttpError should rethrow error with HTTP_ERROR code as is', () => {
+  logTest('Test: handleHttpError rethrows HTTP_ERROR')
+
+  const error = new Error('HTTP 404: Failed to load page')
+  error.code = 'HTTP_ERROR'
+
+  expect(() => {
+    handleHttpError(error, 'https://ru.hexlet.io/courses')
+  }).toThrow(error)
+
+  logTest('Test passed: HTTP_ERROR rethrown')
+})
+
+test('handleHttpError should rethrow unknown error as is', () => {
+  logTest('Test: handleHttpError rethrows unknown error')
+
+  const error = new Error('Something unexpected')
+
+  expect(() => {
+    handleHttpError(error, 'https://ru.hexlet.io/courses')
+  }).toThrow('Something unexpected')
+
+  logTest('Test passed: unknown error rethrown')
+})
+
+test('handleFileWriteError should throw Permission denied for EACCES', () => {
+  logTest('Test: handleFileWriteError throws Permission denied')
+
+  const error = new Error('access denied')
+  error.code = 'EACCES'
+
+  expect(() => {
+    handleFileWriteError(error, '/tmp/file.html', '/tmp')
+  }).toThrow('Permission denied: Cannot write file to /tmp/file.html')
+
+  logTest('Test passed: EACCES thrown')
 })
