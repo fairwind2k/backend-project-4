@@ -18,11 +18,11 @@ program
         return result
       })
       .then((result) => {
-        console.log(`Resorse directory: '${result.dirName}'`)
+        console.log(`Resourse directory: '${result.dirName}'`)
         return result
       })
       .catch((error) => {
-        console.error('Ошибка загрузки:', error.message)
+        console.error('Download error:', error.message)
         process.exit(1)
       })
   })

@@ -11,3 +11,20 @@
 
 PageLoader is a CL utility that downloads pages from the Internet and saves them on your computer.
  Along with the page, it downloads all resources (images, styles and js) making it possible to open the page without the Internet.
+
+##  How to use
+
+# main command: 
+
+page-loader --help
+Usage: page-loader [options] <url>
+
+Page loader utility
+
+Options:
+  -V, --version      output the version number
+  -o --output [dir]  output dir (default: "/home/user/current-dir")
+  -h, --help         display help for command
+
+  
+ [![asciicast](https://asciinema.org/a/843213.svg)](https://asciinema.org/a/843213)
